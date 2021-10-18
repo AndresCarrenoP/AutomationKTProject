@@ -7,18 +7,38 @@ import org.openqa.selenium.InvalidArgumentException;
 import org.openqa.selenium.WebDriver;
 
 import io.cucumber.java.After;
+import io.cucumber.java.AfterAll;
 import io.cucumber.java.Before;
+import io.cucumber.java.BeforeAll;
 
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
 import com.stackoverflow.seleniumutils.SeleniumUtils;
 
 public class Hooks {
 
 	public static WebDriver driver;
+	public static ExtentReports report;
+	public static ExtentTest test;
 	private final String DRIVERSPATH = "src/test/resources/Drivers";
 	private String browserName;
+	
+
+	@BeforeAll
+	public static void beforeAll() throws IOException {
+		report = new ExtentReports("ExtentReports/TestReport.html");
+		test = report.startTest("stackoverflow Search Test");
+	}
+	
+	
+	@AfterAll
+	public static void afterAll() {
+	report.flush();
+	}
+
 
 
 	@Before
@@ -26,8 +46,8 @@ public class Hooks {
 		
 		SeleniumUtils utils = new SeleniumUtils();
 		browserName = utils.readProperty("browser");
-
-		System.out.println("--------- starting " + browserName + " browser -------------------");
+		
+		System.out.println("\n--------- starting " + browserName + " browser -------------------");
 
 		if (browserName.equals("chrome")) {
 			getChromeDriver();
@@ -39,7 +59,6 @@ public class Hooks {
 			throw new InvalidArgumentException("Invalid browser option");
 		}
 	}
-
 
 
 	@After
@@ -64,6 +83,5 @@ public class Hooks {
 		System.setProperty("webdriver.gecko.driver", geckoFile.getPath());
 		driver = new FirefoxDriver();
 	}
-
 
 }

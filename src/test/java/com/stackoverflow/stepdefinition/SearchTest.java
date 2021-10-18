@@ -7,6 +7,9 @@ import java.io.IOException;
 
 import org.openqa.selenium.WebDriver;
 
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
 import com.stackoverflow.hooks.Hooks;
 import com.stackoverflow.pageobjects.HomePage;
 import com.stackoverflow.pageobjects.JobsPage;
@@ -20,6 +23,8 @@ import io.cucumber.java.en.When;
 public class SearchTest {
 
 	WebDriver driver = Hooks.driver;
+	ExtentReports report = Hooks.report;
+	ExtentTest test = Hooks.test;
 	SeleniumUtils utils = new SeleniumUtils();
 	HomePage homeP = new HomePage();
 	JobsPage jobsP = new JobsPage();
@@ -46,10 +51,10 @@ public class SearchTest {
 	}
 
 	@Then("user is navigated to the jobs screen")
-	public void user_is_navigated_to_the_jobs_screen() throws IOException {
+	public void user_is_navigated_to_the_jobs_screen() throws Exception {
 		String currentURL = driver.getCurrentUrl();
 		String expectedURL = utils.readProperty("stackoverflowhome") + "jobs";
-		assertEquals(expectedURL, currentURL);
+		utils.assertLogURL(driver, test, expectedURL, currentURL, utils.getMethodName());
 	}
 
 	@When("user enters <searchCriteria>")
@@ -66,13 +71,17 @@ public class SearchTest {
 	@Then("system displays jobs related to the search criteria")
 	public void system_displays_jobs_related_to_the_search_criteria() throws Exception {
 
-		String totalFoundS = utils.getTotalItemsFound(driver, jobsP.jobSearchTotalFound, " Jobs", "", "jobs"); 
+		String totalFoundS = utils.getTotalItemsFound(driver, jobsP.jobSearchTotalFound, " jobs", "", "jobs"); 
 		if (totalFoundS.equals("0")) {
+			utils.log(driver,test, "FAIL", "No jobs found", utils.getMethodName());
 			fail("No jobs found");
 		} else {
 			boolean isRelated = utils.getJobsTitle(driver, jobsP.jobSrchRsltsTitle);
 			if (isRelated == false) {
+				utils.log(driver,test, "FAIL", "Some jobs are not related to the search criteria", utils.getMethodName());
 				fail("Job is not related to search criteria '" + searchCriteria + "': " + utils.titleValue);
+			} else {
+				utils.log(driver,test, "PASS", "Jobs found for the search criteria", utils.getMethodName());
 			}
 		}
 		Thread.sleep(2000);
@@ -86,10 +95,10 @@ public class SearchTest {
 	}
 
 	@Then("user is navigated to the questions screen")
-	public void user_is_navigated_to_the_questions_screen() throws IOException {
+	public void user_is_navigated_to_the_questions_screen() throws Exception {
 		String currentURL = driver.getCurrentUrl();
 		String expectedURL = utils.readProperty("stackoverflowhome") + "questions";
-		assertEquals(expectedURL, currentURL);
+		utils.assertLogURL(driver, test, expectedURL, currentURL, utils.getMethodName());
 	}
 
 	@When("user clicks on filter button")
@@ -128,11 +137,15 @@ public class SearchTest {
 
 		String totalFoundS = utils.getTotalItemsFound(driver, questionsP.questionFilterTotalFound, " questions with no answers", "", "questions"); 
 		if (totalFoundS.equals("0")) {
+			utils.log(driver,test, "FAIL", "No questions found", utils.getMethodName());
 			fail("No questions found");
 		} else {
 			boolean containsTag = utils.getQuestionsTags (driver, questionsP.questionFilterResults, questionsP.questionFltrRsltsTitle, questionsP.questionFltrRsltsTags);
 			if (containsTag == false) {
+				utils.log(driver,test, "FAIL", "some questions do not contain the search tag", utils.getMethodName());
 				fail("Question does not contain search tag '" + qTags + "': " + utils.titleText);
+			} else {
+				utils.log(driver,test, "PASS", "Questions found for the search tag", utils.getMethodName());
 			}
 		}
 		Thread.sleep(2000);

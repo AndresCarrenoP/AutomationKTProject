@@ -1,19 +1,31 @@
 package com.stackoverflow.seleniumutils;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
+
 
 public class SeleniumUtils {
 
@@ -160,7 +172,7 @@ public class SeleniumUtils {
 
 			List<WebElement> tags = getListOfSubElements(driver, result, childTags);
 			ArrayList<String> ar = new ArrayList<String>();
-			
+
 			for (WebElement tag : tags){
 				String currentTag = tag.getText();
 				ar.add(currentTag);
@@ -173,6 +185,40 @@ public class SeleniumUtils {
 			if (containsTag == false) { break; }
 		}
 		return containsTag;
+	}
+
+
+	public void assertLogURL(WebDriver driver, ExtentTest test, String expectedURL, String currentURL, String screenshotName) throws Exception {
+		if (expectedURL.equals(currentURL)) {
+			test.log(LogStatus.PASS, "User was navigated to the right URL" + test.addScreenCapture(getScreenshot(driver, screenshotName)));
+		} else {
+			test.log(LogStatus.FAIL, "User was navigated to the wrong URL" + test.addScreenCapture(getScreenshot(driver, screenshotName)));
+		}
+		assertEquals(expectedURL, currentURL);
+	}
+	
+	
+	public void log(WebDriver driver, ExtentTest test, String STATUS, String resultComment, String screenshotName) throws Exception {
+		test.log(LogStatus.valueOf(STATUS), resultComment + test.addScreenCapture(getScreenshot(driver, screenshotName)));
+	}
+
+
+	public static String getScreenshot(WebDriver driver, String screenshotName) throws Exception {
+		String dateName = new SimpleDateFormat("yyyMMddhhmmss").format(new Date());
+		TakesScreenshot ts = (TakesScreenshot) driver;
+		File source = ts.getScreenshotAs(OutputType.FILE);
+		String destination = System.getProperty("user.dir") + "/ExtentReports/" + screenshotName + "_" + dateName + ".png";
+		File finalDestination = new File (destination);
+		FileUtils.copyFile(source, finalDestination);
+		Thread.sleep(1000);
+		return destination;
+	}
+
+
+	public String getMethodName() {
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		String currentMethod = stackTrace[2].getMethodName();
+		return currentMethod;
 	}
 
 }

@@ -192,4 +192,8 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
+# Extent Reports
+ExtentReports/
+
+
 # End of https://www.gitignore.io/api/git,java,maven,eclipse,windows
